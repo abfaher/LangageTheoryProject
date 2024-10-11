@@ -21,7 +21,9 @@ ProgName = {AlphaUpperCase}({Alpha}|_)*
 VarName = {AlphaLowerCase}(AlphaNumeric)*
 Number = {Numeric}+
 
-%xstate YYINITIAL, SHORT_COMMENTS_STATE, LONG_COMMENTS_STATE, PRINT
+%xstate YYINITIAL, SHORT_COMMENTS_STATE, LONG_COMMENTS_STATE
+
+%%
 
 //switch between mode, default : YYINITIAL
 
@@ -40,11 +42,5 @@ Number = {Numeric}+
     [^"!!"]+     {}
 }
 
-<PRINT> {}
 
-
-%%// Identification of tokens
-
-{}          {}
-{}          {}
-{}          {}
+// Identification of tokens

@@ -1,0 +1,60 @@
+token: LET        	lexical unit: LET
+token: Euclidean_algorithm	lexical unit: PROGNAME
+token: BE         	lexical unit: BE
+token: IN         	lexical unit: INPUT
+token: (          	lexical unit: LPAREN
+token: a          	lexical unit: VARNAME
+token: )          	lexical unit: RPAREN
+token: :          	lexical unit: COLUMN
+token: IN         	lexical unit: INPUT
+token: (          	lexical unit: LPAREN
+token: b          	lexical unit: VARNAME
+token: )          	lexical unit: RPAREN
+token: :          	lexical unit: COLUMN
+token: WHILE      	lexical unit: WHILE
+token: {          	lexical unit: LBRACK
+token: 0          	lexical unit: NUMBER
+token: <          	lexical unit: SMALLER
+token: b          	lexical unit: VARNAME
+token: }          	lexical unit: RBRACK
+token: REPEAT     	lexical unit: REPEAT
+token: c          	lexical unit: VARNAME
+token: =          	lexical unit: ASSIGN
+token: b          	lexical unit: VARNAME
+token: :          	lexical unit: COLUMN
+token: WHILE      	lexical unit: WHILE
+token: {          	lexical unit: LBRACK
+token: b          	lexical unit: VARNAME
+token: <=         	lexical unit: SMALEQ
+token: a          	lexical unit: VARNAME
+token: }          	lexical unit: RBRACK
+token: REPEAT     	lexical unit: REPEAT
+token: a          	lexical unit: VARNAME
+token: =          	lexical unit: ASSIGN
+token: a          	lexical unit: VARNAME
+token: -          	lexical unit: MINUS
+token: b          	lexical unit: VARNAME
+token: :          	lexical unit: COLUMN
+token: END        	lexical unit: END
+token: :          	lexical unit: COLUMN
+token: b          	lexical unit: VARNAME
+token: =          	lexical unit: ASSIGN
+token: a          	lexical unit: VARNAME
+token: :          	lexical unit: COLUMN
+token: a          	lexical unit: VARNAME
+token: =          	lexical unit: ASSIGN
+token: c          	lexical unit: VARNAME
+token: :          	lexical unit: COLUMN
+token: END        	lexical unit: END
+token: :          	lexical unit: COLUMN
+token: OUT        	lexical unit: OUTPUT
+token: (          	lexical unit: LPAREN
+token: a          	lexical unit: VARNAME
+token: )          	lexical unit: RPAREN
+token: :          	lexical unit: COLUMN
+token: END        	lexical unit: END
+
+Variables
+a	4
+b	5
+c	7
