@@ -1,10 +1,10 @@
-%%// Options of the scanner
+
+%% // Options of the scanner
 
 %class LexicalAnalyzer	//Name
 %unicode			//Use unicode
 %line         	//Use line counter (yyline variable)
 %column       	//Use character counter by line (yycolumn variable)
-%type Symbol  //Says that the return type is Symbol
 %standalone		//Tell that Jflex don't use a parser
 
 // Extended Regular Expressions
@@ -21,9 +21,7 @@ Number = {Numeric}+
 
 %xstate YYINITIAL, SHORT_COMMENTS_STATE, LONG_COMMENTS_STATE
 
-%%
-
-//switch between mode, default : YYINITIAL
+%% //Identification of tokens
 
 <YYINITIAL> {
     // transition to comments states
@@ -60,7 +58,7 @@ Number = {Numeric}+
     "IN"            { return new Symbol(LexicalUnit.INPUT, yyline, yycolumn, "IN"); }
     {ProgName}      { return new Symbol(LexicalUnit.PROGNAME, yyline, yycolumn, yytext()); }
     {VarName}       { return new Symbol(LexicalUnit.VARNAME, yyline, yycolumn, yytext()); }
-    {Number}        { return new Symbol(LexicalUnit.NUMBER, yyline, yycolumn, Integer.parseInt(yytext())); }
+    {Number}        { return new Symbol(LexicalUnit.NUMBER, yyline, yycolumn, yytext()); }
 
 }
 
