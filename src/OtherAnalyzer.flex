@@ -1,3 +1,8 @@
+
+// Import the HashMap class
+import java.util.HashMap;
+
+
 %%// Options of the scanner
 
 %class Lexer5	//Name
@@ -7,8 +12,24 @@
 %type Symbol  //Says that the return type is Symbol
 %standalone		//Standalone mode
 
+%{//start adding Java code
+    private HashMap<String, Integer> variables = new HashMap<String, Integer>();
+		
+	private void addVariable(String variableName, Integer variableLine){
+        if(!variables.containsKey(variableName)) {// Check if it didn't already appeared before
+            variables.put(variableName, variableLine);
+        }
+		
+	}
+%}//end adding Java code
+
+
 // Return value of the program
 %eofval{
+    System.out.println("\nVariables");
+    for (String key : variables.keySet()) {
+      System.out.println(key + "\t" + variables.get(key));
+    }
 	return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
 %eofval}
 
@@ -63,10 +84,8 @@ Number         = (0|[1-9]{Numeric}*)
     "IN"   {Symbol symbol = new Symbol(LexicalUnit.INPUT, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
 
     {ProgName} {Symbol symbol = new Symbol(LexicalUnit.PROGNAME, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    {VarName} {Symbol symbol = new Symbol(LexicalUnit.VARNAME, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
+    {VarName} {addVariable(yytext(), yyline+1); Symbol symbol = new Symbol(LexicalUnit.VARNAME, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
     {Number} {Symbol symbol = new Symbol(LexicalUnit.NUMBER, yyline, yycolumn, Integer.parseInt(yytext())); System.out.println(symbol); return symbol;}
-
-
 }
 
 
