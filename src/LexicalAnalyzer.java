@@ -3,11 +3,6 @@
 // source: LexicalAnalyzer.flex
 
 
-// Import the HashMap class
-import java.util.HashMap;
-
-
-
 @SuppressWarnings("fallthrough")
 class LexicalAnalyzer {
 
@@ -311,16 +306,6 @@ class LexicalAnalyzer {
   /** Whether the user-EOF-code has already been executed. */
   @SuppressWarnings("unused")
   private boolean zzEOFDone;
-
-  /* user code: */
-    private HashMap<String, Integer> variables = new HashMap<String, Integer>();
-		
-	private void addVariable(String variableName, Integer variableLine){
-        if(!variables.containsKey(variableName)) {// Check if it didn't already appeared before
-            variables.put(variableName, variableLine);
-        }
-		
-	}
 
 
   /**
@@ -729,11 +714,7 @@ class LexicalAnalyzer {
 
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
-          {     System.out.println("\nVariables");
-    for (String key : variables.keySet()) {
-      System.out.println(key + "\t" + variables.get(key));
-    }
-	return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
+          { 	return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
  }
       }
       else {
@@ -749,77 +730,77 @@ class LexicalAnalyzer {
           // fall through
           case 35: break;
           case 3:
-            { Symbol symbol = new Symbol(LexicalUnit.LPAREN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.LPAREN, yyline, yycolumn, yytext());
             }
           // fall through
           case 36: break;
           case 4:
-            { Symbol symbol = new Symbol(LexicalUnit.RPAREN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.RPAREN, yyline, yycolumn, yytext());
             }
           // fall through
           case 37: break;
           case 5:
-            { Symbol symbol = new Symbol(LexicalUnit.TIMES, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.TIMES, yyline, yycolumn, yytext());
             }
           // fall through
           case 38: break;
           case 6:
-            { Symbol symbol = new Symbol(LexicalUnit.PLUS, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.PLUS, yyline, yycolumn, yytext());
             }
           // fall through
           case 39: break;
           case 7:
-            { Symbol symbol = new Symbol(LexicalUnit.MINUS, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.MINUS, yyline, yycolumn, yytext());
             }
           // fall through
           case 40: break;
           case 8:
-            { Symbol symbol = new Symbol(LexicalUnit.DIVIDE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.DIVIDE, yyline, yycolumn, yytext());
             }
           // fall through
           case 41: break;
           case 9:
-            { Symbol symbol = new Symbol(LexicalUnit.NUMBER, yyline, yycolumn, Integer.parseInt(yytext())); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.NUMBER, yyline, yycolumn, Integer.parseInt(yytext()));
             }
           // fall through
           case 42: break;
           case 10:
-            { Symbol symbol = new Symbol(LexicalUnit.COLUMN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.COLUMN, yyline, yycolumn, yytext());
             }
           // fall through
           case 43: break;
           case 11:
-            { Symbol symbol = new Symbol(LexicalUnit.SMALLER, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.SMALLER, yyline, yycolumn, yytext());
             }
           // fall through
           case 44: break;
           case 12:
-            { Symbol symbol = new Symbol(LexicalUnit.ASSIGN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.ASSIGN, yyline, yycolumn, yytext());
             }
           // fall through
           case 45: break;
           case 13:
-            { Symbol symbol = new Symbol(LexicalUnit.PROGNAME, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.PROGNAME, yyline, yycolumn, yytext());
             }
           // fall through
           case 46: break;
           case 14:
-            { addVariable(yytext(), yyline+1); Symbol symbol = new Symbol(LexicalUnit.VARNAME, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.VARNAME, yyline, yycolumn, yytext());
             }
           // fall through
           case 47: break;
           case 15:
-            { Symbol symbol = new Symbol(LexicalUnit.LBRACK, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.LBRACK, yyline, yycolumn, yytext());
             }
           // fall through
           case 48: break;
           case 16:
-            { Symbol symbol = new Symbol(LexicalUnit.PIPE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.PIPE, yyline, yycolumn, yytext());
             }
           // fall through
           case 49: break;
           case 17:
-            { Symbol symbol = new Symbol(LexicalUnit.RBRACK, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.RBRACK, yyline, yycolumn, yytext());
             }
           // fall through
           case 50: break;
@@ -839,67 +820,67 @@ class LexicalAnalyzer {
           // fall through
           case 53: break;
           case 21:
-            { Symbol symbol = new Symbol(LexicalUnit.IMPLIES, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.IMPLIES, yyline, yycolumn, yytext());
             }
           // fall through
           case 54: break;
           case 22:
-            { Symbol symbol = new Symbol(LexicalUnit.SMALEQ, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.SMALEQ, yyline, yycolumn, yytext());
             }
           // fall through
           case 55: break;
           case 23:
-            { Symbol symbol = new Symbol(LexicalUnit.EQUAL, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.EQUAL, yyline, yycolumn, yytext());
             }
           // fall through
           case 56: break;
           case 24:
-            { Symbol symbol = new Symbol(LexicalUnit.BE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.BE, yyline, yycolumn, yytext());
             }
           // fall through
           case 57: break;
           case 25:
-            { Symbol symbol = new Symbol(LexicalUnit.IF, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.IF, yyline, yycolumn, yytext());
             }
           // fall through
           case 58: break;
           case 26:
-            { Symbol symbol = new Symbol(LexicalUnit.INPUT, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.INPUT, yyline, yycolumn, yytext());
             }
           // fall through
           case 59: break;
           case 27:
-            { Symbol symbol = new Symbol(LexicalUnit.END, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.END, yyline, yycolumn, yytext());
             }
           // fall through
           case 60: break;
           case 28:
-            { Symbol symbol = new Symbol(LexicalUnit.LET, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.LET, yyline, yycolumn, yytext());
             }
           // fall through
           case 61: break;
           case 29:
-            { Symbol symbol = new Symbol(LexicalUnit.OUTPUT, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.OUTPUT, yyline, yycolumn, yytext());
             }
           // fall through
           case 62: break;
           case 30:
-            { Symbol symbol = new Symbol(LexicalUnit.ELSE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.ELSE, yyline, yycolumn, yytext());
             }
           // fall through
           case 63: break;
           case 31:
-            { Symbol symbol = new Symbol(LexicalUnit.THEN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.THEN, yyline, yycolumn, yytext());
             }
           // fall through
           case 64: break;
           case 32:
-            { Symbol symbol = new Symbol(LexicalUnit.WHILE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.WHILE, yyline, yycolumn, yytext());
             }
           // fall through
           case 65: break;
           case 33:
-            { Symbol symbol = new Symbol(LexicalUnit.REPEAT, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;
+            { return new Symbol(LexicalUnit.REPEAT, yyline, yycolumn, yytext());
             }
           // fall through
           case 66: break;

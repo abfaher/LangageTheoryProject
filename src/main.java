@@ -1,6 +1,6 @@
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) {
@@ -8,10 +8,17 @@ public class Main {
             // Initialize the lexer
             LexicalAnalyzer lexer = new LexicalAnalyzer(new FileReader(args[0]));
             Symbol token;
-            ArrayList<Symbol> symbols = new ArrayList<>();
+            HashMap<String, Integer> variables = new HashMap<String, Integer>();
             // Read all tokens
             while ((token = lexer.yylex()).getType() != LexicalUnit.EOS) {
                 System.out.println(token.toString());
+                if(token.getType() == LexicalUnit.VARNAME && !variables.containsKey(token.getValue())) {
+                    variables.put(token.getValue().toString(), token.getLine());
+                }
+            }
+            System.out.println("\nVariables");
+            for (String key : variables.keySet()) {
+                System.out.println(key + "\t" + variables.get(key));
             }
         }
         catch (IOException e) {

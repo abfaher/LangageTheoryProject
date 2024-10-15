@@ -1,8 +1,3 @@
-
-// Import the HashMap class
-import java.util.HashMap;
-
-
 %%// Options of the scanner
 
 %class LexicalAnalyzer	//Name
@@ -12,24 +7,8 @@ import java.util.HashMap;
 %type Symbol  //Says that the return type is Symbol
 %standalone		//Standalone mode
 
-%{//start adding Java code
-    private HashMap<String, Integer> variables = new HashMap<String, Integer>();
-		
-	private void addVariable(String variableName, Integer variableLine){
-        if(!variables.containsKey(variableName)) {// Check if it didn't already appeared before
-            variables.put(variableName, variableLine);
-        }
-		
-	}
-%}//end adding Java code
-
-
 // Return value of the program
 %eofval{
-    System.out.println("\nVariables");
-    for (String key : variables.keySet()) {
-      System.out.println(key + "\t" + variables.get(key));
-    }
 	return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
 %eofval}
 
@@ -57,35 +36,35 @@ Number         = (0|[1-9]{Numeric}*)
     "$"     {yybegin(SHORT_COMMENTS_STATE);}
     "!!"     {yybegin(LONG_COMMENTS_STATE);}
 
-    "LET"   {Symbol symbol = new Symbol(LexicalUnit.LET, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "BE"   {Symbol symbol = new Symbol(LexicalUnit.BE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "END"   {Symbol symbol = new Symbol(LexicalUnit.END, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    ":"   {Symbol symbol = new Symbol(LexicalUnit.COLUMN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "="   {Symbol symbol = new Symbol(LexicalUnit.ASSIGN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "("   {Symbol symbol = new Symbol(LexicalUnit.LPAREN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    ")"   {Symbol symbol = new Symbol(LexicalUnit.RPAREN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "-"   {Symbol symbol = new Symbol(LexicalUnit.MINUS, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "+"   {Symbol symbol = new Symbol(LexicalUnit.PLUS, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "*"   {Symbol symbol = new Symbol(LexicalUnit.TIMES, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "/"   {Symbol symbol = new Symbol(LexicalUnit.DIVIDE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "IF"   {Symbol symbol = new Symbol(LexicalUnit.IF, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "THEN"   {Symbol symbol = new Symbol(LexicalUnit.THEN, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "ELSE"   {Symbol symbol = new Symbol(LexicalUnit.ELSE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "{"   {Symbol symbol = new Symbol(LexicalUnit.LBRACK, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "}"   {Symbol symbol = new Symbol(LexicalUnit.RBRACK, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "->"   {Symbol symbol = new Symbol(LexicalUnit.IMPLIES, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "|"   {Symbol symbol = new Symbol(LexicalUnit.PIPE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "=="   {Symbol symbol = new Symbol(LexicalUnit.EQUAL, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "<="   {Symbol symbol = new Symbol(LexicalUnit.SMALEQ, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "<"   {Symbol symbol = new Symbol(LexicalUnit.SMALLER, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "WHILE"   {Symbol symbol = new Symbol(LexicalUnit.WHILE, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "REPEAT"   {Symbol symbol = new Symbol(LexicalUnit.REPEAT, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "OUT"   {Symbol symbol = new Symbol(LexicalUnit.OUTPUT, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    "IN"   {Symbol symbol = new Symbol(LexicalUnit.INPUT, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
+    "LET"   {return new Symbol(LexicalUnit.LET, yyline, yycolumn, yytext());}
+    "BE"   {return new Symbol(LexicalUnit.BE, yyline, yycolumn, yytext());}
+    "END"   {return new Symbol(LexicalUnit.END, yyline, yycolumn, yytext());}
+    ":"   {return new Symbol(LexicalUnit.COLUMN, yyline, yycolumn, yytext());}
+    "="   {return new Symbol(LexicalUnit.ASSIGN, yyline, yycolumn, yytext());}
+    "("   {return new Symbol(LexicalUnit.LPAREN, yyline, yycolumn, yytext());}
+    ")"   {return new Symbol(LexicalUnit.RPAREN, yyline, yycolumn, yytext());}
+    "-"   {return new Symbol(LexicalUnit.MINUS, yyline, yycolumn, yytext());}
+    "+"   {return new Symbol(LexicalUnit.PLUS, yyline, yycolumn, yytext());}
+    "*"   {return new Symbol(LexicalUnit.TIMES, yyline, yycolumn, yytext());}
+    "/"   {return new Symbol(LexicalUnit.DIVIDE, yyline, yycolumn, yytext());}
+    "IF"   {return new Symbol(LexicalUnit.IF, yyline, yycolumn, yytext());}
+    "THEN"   {return new Symbol(LexicalUnit.THEN, yyline, yycolumn, yytext());}
+    "ELSE"   {return new Symbol(LexicalUnit.ELSE, yyline, yycolumn, yytext());}
+    "{"   {return new Symbol(LexicalUnit.LBRACK, yyline, yycolumn, yytext());}
+    "}"   {return new Symbol(LexicalUnit.RBRACK, yyline, yycolumn, yytext());}
+    "->"   {return new Symbol(LexicalUnit.IMPLIES, yyline, yycolumn, yytext());}
+    "|"   {return new Symbol(LexicalUnit.PIPE, yyline, yycolumn, yytext());}
+    "=="   {return new Symbol(LexicalUnit.EQUAL, yyline, yycolumn, yytext());}
+    "<="   {return new Symbol(LexicalUnit.SMALEQ, yyline, yycolumn, yytext());}
+    "<"   {return new Symbol(LexicalUnit.SMALLER, yyline, yycolumn, yytext());}
+    "WHILE"   {return new Symbol(LexicalUnit.WHILE, yyline, yycolumn, yytext());}
+    "REPEAT"   {return new Symbol(LexicalUnit.REPEAT, yyline, yycolumn, yytext());}
+    "OUT"   {return new Symbol(LexicalUnit.OUTPUT, yyline, yycolumn, yytext());}
+    "IN"   {return new Symbol(LexicalUnit.INPUT, yyline, yycolumn, yytext());}
 
-    {ProgName} {Symbol symbol = new Symbol(LexicalUnit.PROGNAME, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    {VarName} {addVariable(yytext(), yyline+1); Symbol symbol = new Symbol(LexicalUnit.VARNAME, yyline, yycolumn, yytext()); System.out.println(symbol); return symbol;}
-    {Number} {Symbol symbol = new Symbol(LexicalUnit.NUMBER, yyline, yycolumn, Integer.parseInt(yytext())); System.out.println(symbol); return symbol;}
+    {ProgName} {return new Symbol(LexicalUnit.PROGNAME, yyline, yycolumn, yytext());}
+    {VarName} {return new Symbol(LexicalUnit.VARNAME, yyline, yycolumn, yytext());}
+    {Number} {return new Symbol(LexicalUnit.NUMBER, yyline, yycolumn, Integer.parseInt(yytext()));}
 }
 
 
