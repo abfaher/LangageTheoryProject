@@ -1,3 +1,4 @@
+//package src;
 %%// Options of the scanner
 
 %class LexicalAnalyzer	//Name
