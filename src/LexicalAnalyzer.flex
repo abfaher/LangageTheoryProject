@@ -66,16 +66,22 @@ Number         = (0|[1-9]{Numeric}*)
     {ProgName} {return new Symbol(LexicalUnit.PROGNAME, yyline, yycolumn, yytext());}
     {VarName} {return new Symbol(LexicalUnit.VARNAME, yyline, yycolumn, yytext());}
     {Number} {return new Symbol(LexicalUnit.NUMBER, yyline, yycolumn, Integer.parseInt(yytext()));}
+
+    {Space} {} // Ignore spaces
+    {EndOfLine} {} // Ignore the newline character
+
 }
 
 
 <SHORT_COMMENTS_STATE> {
     {EndOfLine} {yybegin(YYINITIAL);}
-    . {} // Ignore every character in the comment
+    . {} // Ignore every character in the comment except the newline character
+    {EndOfLine} {} // Ignore the newline character
 }
 
 <LONG_COMMENTS_STATE> {
     "!!" {yybegin(YYINITIAL);}
-    . {} // Ignore every character in the comment
+    . {} // Ignore every character in the comment except the newline character
+    {EndOfLine} {} // Ignore the newline character
 }
 
