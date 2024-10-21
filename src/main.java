@@ -1,6 +1,7 @@
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class Main {
     public static void main(String[] args) {
@@ -8,7 +9,7 @@ public class Main {
             // Initialize the lexer
             LexicalAnalyzer lexer = new LexicalAnalyzer(new FileReader(args[0]));
             Symbol token;
-            HashMap<String, Integer> variables = new HashMap<String, Integer>();
+            LinkedHashMap<String, Integer> variables = new LinkedHashMap<String, Integer>(); // LinkedHashMap to preserve the order of the variables
             // Read all tokens
             while ((token = lexer.yylex()).getType() != LexicalUnit.EOS) {
                 System.out.println(token.toString());

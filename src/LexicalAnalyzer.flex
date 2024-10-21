@@ -28,7 +28,7 @@ ProgName       = {AlphaUpperCase}({Alpha}|"_")*
 VarName        = {AlphaLowerCase}{AlphaNumeric}*
 Number         = (0|[1-9]{Numeric}*)
 
-%xstate YYINITIAL, SHORT_COMMENTS_STATE, LONG_COMMENTS_STATE
+%xstate YYINITIAL, SHORT_COMMENTS_STATE, LONG_COMMENTS_STATE, PROGNAME_STATE
 
 %%// Identification of tokens
 
@@ -37,7 +37,7 @@ Number         = (0|[1-9]{Numeric}*)
     "$"     {yybegin(SHORT_COMMENTS_STATE);}
     "!!"     {yybegin(LONG_COMMENTS_STATE);}
 
-    "LET"   {return new Symbol(LexicalUnit.LET, yyline, yycolumn, yytext());}
+    "LET"   {Symbol token = new Symbol(LexicalUnit.LET, yyline, yycolumn, yytext()); yybegin(PROGNAME_STATE); return token; }
     "BE"   {return new Symbol(LexicalUnit.BE, yyline, yycolumn, yytext());}
     "END"   {return new Symbol(LexicalUnit.END, yyline, yycolumn, yytext());}
     ":"   {return new Symbol(LexicalUnit.COLUMN, yyline, yycolumn, yytext());}
@@ -72,16 +72,21 @@ Number         = (0|[1-9]{Numeric}*)
 
 }
 
-
 <SHORT_COMMENTS_STATE> {
     {EndOfLine} {yybegin(YYINITIAL);}
     . {} // Ignore every character in the comment except the newline character
-    {EndOfLine} {} // Ignore the newline character
 }
 
 <LONG_COMMENTS_STATE> {
     "!!" {yybegin(YYINITIAL);}
     . {} // Ignore every character in the comment except the newline character
     {EndOfLine} {} // Ignore the newline character
+}
+
+
+<PROGNAME_STATE> {
+    {Space} {}
+    {EndOfLine} {yybegin(YYINITIAL);}
+    {ProgName} {Symbol token = new Symbol(LexicalUnit.PROGNAME, yyline, yycolumn, yytext()); yybegin(YYINITIAL); return token; }
 }
 
