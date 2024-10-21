@@ -4,7 +4,7 @@ DIST_DIR = dist
 MANIFEST = $(DIST_DIR)/manifest/MANIFEST.MF
 JAR_NAME = part1.jar
 MAIN_CLASS = LexicalAnalyzer
-INPUT_FILE = ../Euclid.gls
+INPUT_FILE = ./Euclid.gls
 TEST_FILES = test/LongComment.gls test/ShortComment.gls test/CombinedComments.gls test/WhiteSpace1.gls test/WhiteSpace2.gls test/ProgName.gls
 
 # Default target
