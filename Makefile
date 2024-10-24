@@ -35,4 +35,4 @@ test: jar
 
 # Clean .class files & JAR
 clean:
-	rm -rf $(SRC_DIR)/*.class $(DIST_DIR)/*.jar
+	rm -rf $(SRC_DIR)/*.class
