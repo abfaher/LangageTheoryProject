@@ -189,4 +189,8 @@
         }
         return res;
     }
+
+    public String toTexString(){
+        return this.toString();
+    }
  }
