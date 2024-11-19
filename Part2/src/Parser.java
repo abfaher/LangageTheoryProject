@@ -37,20 +37,23 @@ public class Parser {
         match(LexicalUnit.END);
     }
 
-    public void parseCode() {
-        if (currentToken.getType() == LexicalUnit.ASSIGN || currentToken.getType() == LexicalUnit.IF || currentToken.getType() == LexicalUnit.WHILE || currentToken.getType() == LexicalUnit.OUTPUT || currentToken.getType() == LexicalUnit.INPUT) {
-            derivation.add(2); // Rule 2: <Code> → <Instruction> : <Code>
-            parseInstruction();
+    private void parseCodePrime() {
+        if (currentToken.getType() == LexicalUnit.COLUMN) {
             match(LexicalUnit.COLUMN);
             parseCode();
-        } else if (currentToken.getType() == LexicalUnit.END) {
-            derivation.add(3); // Rule 3: <Code> → ε
-        } else {
-            //error("Unexpected token in <Code>");
+        } else { // TODO: REGLE 3 A RAJOUTER
+            //error("Unexpected token in <CodePrime>");
         }
     }
 
-    public void parseInstruction() {
+    private void parseCode() {
+        derivation.add(2); // Rule 2: <Code> → <Instruction> : <Code>
+        parseInstruction();
+        match(LexicalUnit.COLUMN);
+        parseCodePrime();
+    }
+
+    private void parseInstruction() {
        if (currentToken.getType() == LexicalUnit.ASSIGN) {
             derivation.add(4); // Rule 4: <Instruction> → <Assignment>
             parseAssignment();
@@ -61,7 +64,7 @@ public class Parser {
             derivation.add(6); // Rule 6: <Instruction> → <While>
             parseWhile();
         }
-        // Rule 7 is missing <Call> is not defined in the LexicalUnit class !!
+        // TODO: Rule 7 is missing <Call> is not defined in the LexicalUnit class !!
         else if (currentToken.getType() == LexicalUnit.OUTPUT) {
             derivation.add(8); // Rule 8: <Instruction> → <Out>
             parseOut();
@@ -73,7 +76,7 @@ public class Parser {
         }
     }
 
-    public void parseAssignment() {
+    private void parseAssignment() {
         derivation.add(10); // Rule 10: <Assignment> → [VarName] = <ExprArith>
         match(LexicalUnit.VARNAME);
         match(LexicalUnit.ASSIGN);
@@ -81,45 +84,49 @@ public class Parser {
     }
 
     // à revoir pour les règles 11 et 12
-    public void parseExprArith() {
+    private void parseExprArith() {
         parseTerm();
-        derivation.add(13); // Rule 13: <ExprArith> -> <Term>
+        boolean opExist = false;
 
-        if (currentToken.getType() == LexicalUnit.PLUS) {
-            derivation.remove(derivation.size() - 1); // pop the 13 rule from the derivation
-            derivation.add(11);
-            match(LexicalUnit.PLUS);
+        while (currentToken.getType() == LexicalUnit.PLUS || currentToken.getType() == LexicalUnit.MINUS) {
+            if (currentToken.getType() == LexicalUnit.PLUS) {
+                derivation.add(11);
+                match(LexicalUnit.PLUS);
+                opExist = true;
+            } else if ((currentToken.getType() == LexicalUnit.MINUS)) {
+                derivation.add(12);
+                match(LexicalUnit.MINUS);
+                opExist = true;
+            }
             parseTerm();
-        } else if ((currentToken.getType() == LexicalUnit.MINUS)) {
-            derivation.remove(derivation.size() - 1); // pop the 13 rule from the derivation
-            derivation.add(12);
-            match(LexicalUnit.MINUS);
-            parseTerm();
-        } else {
-            //error("Unexpected token in <ExprArith>");
+        }
+        if (!opExist) {
+            derivation.add(13); // Rule 13: <ExprArith> -> <Term>
         }
     }
 
-    public void parseTerm() {
+    private void parseTerm() {
         parseFactor(); // Rule 16 is explicitly handled by this line
-        derivation.add(16); // Rule 16: <Term> → <Factor>
-        if (currentToken.getType() == LexicalUnit.TIMES) {
-            derivation.remove(derivation.size() - 1); // pop the 16 rule from the derivation
-            derivation.add(14); // Rule 14: <Term> → <Factor> * <Term>
-            match(LexicalUnit.TIMES);
-            parseTerm();
-        } else if (currentToken.getType() == LexicalUnit.DIVIDE) {
-            derivation.remove(derivation.size() - 1); // pop the 16 rule from the derivation
-            derivation.add(15); // Rule 15: <Term> → <Factor> / <Term>   ICI ON FAIT FACTOR / TERM et NON PAS TERM / FACTOR !!!!!
-            match(LexicalUnit.DIVIDE);
-            parseTerm();
-        } 
-        else {
-            //error("Unexpected token in <Term>");
+        boolean opExist = false;
+
+        while (currentToken.getType() == LexicalUnit.TIMES || currentToken.getType() == LexicalUnit.DIVIDE) {
+            if (currentToken.getType() == LexicalUnit.TIMES) {
+                derivation.add(14); // Rule 14: <Term> → <Factor> * <Term>
+                match(LexicalUnit.TIMES);
+                opExist = true;
+            } else if (currentToken.getType() == LexicalUnit.DIVIDE) {
+                derivation.add(15); // Rule 15: <Term> → <Factor> / <Term>   ICI ON FAIT FACTOR / TERM et NON PAS TERM / FACTOR !!!!!
+                match(LexicalUnit.DIVIDE);
+                opExist = true;
+            }
+            parseFactor();
+        }
+        if (!opExist) {
+            derivation.add(16); // Rule 16: <Term> → <Factor>
         }
     }
 
-    public void parseFactor() {
+    private void parseFactor() {
         if (currentToken.getType() == LexicalUnit.VARNAME){
             derivation.add(17); // Rule 17: <Factor> → [VarName]
             match(LexicalUnit.VARNAME);
@@ -136,11 +143,11 @@ public class Parser {
             parseExprArith();
             match(LexicalUnit.RPAREN);
         } else {
-            //error("Unexpected token in <ExprArith>");
+            //error("Unexpected token in <Factor>");
         }
     }
 
-    public void parseIf() {
+    private void parseIf() {
         match(LexicalUnit.IF);
         match(LexicalUnit.LBRACK);
         parseCond();
@@ -157,27 +164,38 @@ public class Parser {
         match(LexicalUnit.END);
     }
 
-    public void parseCond() {
-        // PAS SUR DU IF DE LA REGLE 23
-        if (currentToken.getType() == LexicalUnit.VARNAME || currentToken.getType() == LexicalUnit.NUMBER) {
-            derivation.add(23); // Rule 23: <Cond> → <ExprArith> <Comp> <ExprArith>
-            parseExprArith();
-            parseComp();
-            parseExprArith();
-        } else if (currentToken.getType() == LexicalUnit.LPAREN) {
-            derivation.add(25); // Rule 25: <Cond> → ( <Cond> )
-            match(LexicalUnit.LPAREN);
-            parseCond();
-            match(LexicalUnit.RPAREN); 
-        }
-        // REGLE 26 ET 27 A RAJOUTER
-        else {
-            // error("Unexpected token in <Cond>");
-        }
-
+    private void parseCond() {
+        parseCondImpl(); // Start with the highest precedence level
     }
 
-    public void parseComp() {
+    private void parseCondImpl() {
+        parseCondOr(); // Parse lower precedence <CondOr>
+    
+        while (currentToken.getType() == LexicalUnit.IMPLIES) {
+            derivation.add(24); // Rule 24: <Cond> → <Cond> -> <Cond>
+            match(LexicalUnit.IMPLIES);
+            parseCondOr();
+        }
+    }
+
+    private void parseCondOr() {
+        parseCondBase(); // Parse the base condition
+    
+        while (currentToken.getType() == LexicalUnit.PIPE) {
+            derivation.add(25); // Rule 25: <Cond> → <Cond> | <Cond>
+            match(LexicalUnit.PIPE);
+            parseCondBase();
+        }
+    }
+    
+    private void parseCondBase() {
+        parseExprArith();
+        derivation.add(26); // Rule 26: <Cond> → <ExprArith> <Comp> <ExprArith>
+        parseComp();
+        parseExprArith();
+    }
+
+    private void parseComp() {
         if (currentToken.getType() == LexicalUnit.EQUAL) {
             derivation.add(28); // Rule 28: <Comp> → ==
             match(LexicalUnit.EQUAL);
@@ -192,7 +210,7 @@ public class Parser {
         }
     }
 
-    public void parseWhile() {
+    private void parseWhile() {
         derivation.add(31); // Rule 31: <While> → WHILE [Cond] REPEAT <Code> END
         match(LexicalUnit.WHILE);
         match(LexicalUnit.LBRACK);
@@ -203,13 +221,13 @@ public class Parser {
         match(LexicalUnit.END);
     }
 
-    public void parseOut() {
+    private void parseOut() {
         derivation.add(32); // Rule 32: <Out> → OUT [VarName]
         match(LexicalUnit.OUTPUT);
         match(LexicalUnit.VARNAME);
     }
 
-    public void parseIn() {
+    private void parseIn() {
         derivation.add(33); // Rule 33: <In> → IN [VarName]
         match(LexicalUnit.INPUT);
         match(LexicalUnit.VARNAME);
