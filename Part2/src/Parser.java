@@ -88,12 +88,12 @@ public class Parser {
         if (currentToken.getType() == LexicalUnit.PLUS) {
             derivation.remove(derivation.size() - 1); // pop the 13 rule from the derivation
             derivation.add(11);
-            parseOp();
+            match(LexicalUnit.PLUS);
             parseTerm();
         } else if ((currentToken.getType() == LexicalUnit.MINUS)) {
             derivation.remove(derivation.size() - 1); // pop the 13 rule from the derivation
             derivation.add(12);
-            parseOp();
+            match(LexicalUnit.MINUS);
             parseTerm();
         } else {
             //error("Unexpected token in <ExprArith>");
@@ -106,12 +106,12 @@ public class Parser {
         if (currentToken.getType() == LexicalUnit.TIMES) {
             derivation.remove(derivation.size() - 1); // pop the 16 rule from the derivation
             derivation.add(14); // Rule 14: <Term> → <Factor> * <Term>
-            parseOp();
+            match(LexicalUnit.TIMES);
             parseTerm();
         } else if (currentToken.getType() == LexicalUnit.DIVIDE) {
             derivation.remove(derivation.size() - 1); // pop the 16 rule from the derivation
             derivation.add(15); // Rule 15: <Term> → <Factor> / <Term>   ICI ON FAIT FACTOR / TERM et NON PAS TERM / FACTOR !!!!!
-            parseOp();
+            match(LexicalUnit.DIVIDE);
             parseTerm();
         } 
         else {
@@ -137,24 +137,6 @@ public class Parser {
             match(LexicalUnit.RPAREN);
         } else {
             //error("Unexpected token in <ExprArith>");
-        }
-    }
-
-    public void parseOp() {
-        if (currentToken.getType() == LexicalUnit.PLUS) {
-            derivation.add(16); // Rule 16: <Op> → +
-            match(LexicalUnit.PLUS);
-        } else if (currentToken.getType() == LexicalUnit.MINUS) {
-            derivation.add(17); // Rule 17: <Op> → -
-            match(LexicalUnit.MINUS);
-        } else if (currentToken.getType() == LexicalUnit.TIMES) {
-            derivation.add(18); // Rule 18: <Op> → *
-            match(LexicalUnit.TIMES);
-        } else if (currentToken.getType() == LexicalUnit.DIVIDE) {
-            derivation.add(19); // Rule 19: <Op> → /
-            match(LexicalUnit.DIVIDE);
-        } else {
-            //error("Unexpected token in <Op>");
         }
     }
 
