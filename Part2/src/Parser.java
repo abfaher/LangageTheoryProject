@@ -166,6 +166,7 @@ public class Parser {
 
     private void parseCond() {
         parseCondImpl(); // Start with the highest precedence level
+        derivation.add(23); // Rule 23: <Cond> → <CondImpl>
     }
 
     private void parseCondImpl() {
@@ -197,13 +198,13 @@ public class Parser {
 
     private void parseComp() {
         if (currentToken.getType() == LexicalUnit.EQUAL) {
-            derivation.add(28); // Rule 28: <Comp> → ==
+            derivation.add(27); // Rule 27: <Comp> → ==
             match(LexicalUnit.EQUAL);
         } else if (currentToken.getType() == LexicalUnit.SMALEQ) {
-            derivation.add(29); // Rule 29: <Comp> → <=
+            derivation.add(28); // Rule 28: <Comp> → <=
             match(LexicalUnit.SMALEQ);
         } else if (currentToken.getType() == LexicalUnit.SMALLER) {
-            derivation.add(30); // Rule 30: <Comp> → <
+            derivation.add(29); // Rule 29: <Comp> → <
             match(LexicalUnit.SMALLER);
         } else {
             //error("Unexpected token in <Comp>");
@@ -211,7 +212,7 @@ public class Parser {
     }
 
     private void parseWhile() {
-        derivation.add(31); // Rule 31: <While> → WHILE [Cond] REPEAT <Code> END
+        derivation.add(30); // Rule 30: <While> → WHILE [Cond] REPEAT <Code> END
         match(LexicalUnit.WHILE);
         match(LexicalUnit.LBRACK);
         parseCond();
@@ -222,7 +223,7 @@ public class Parser {
     }
 
     private void parseOut() {
-        derivation.add(32); // Rule 32: <Out> → OUT [VarName]
+        derivation.add(31); // Rule 31: <Out> → OUT [VarName]
         match(LexicalUnit.OUTPUT);
         match(LexicalUnit.VARNAME);
     }
