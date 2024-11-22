@@ -37,20 +37,12 @@ public class Parser {
         match(LexicalUnit.END);
     }
 
-    private void parseCodePrime() {
-        if (currentToken.getType() == LexicalUnit.COLUMN) {
-            match(LexicalUnit.COLUMN);
-            parseCode();
-        } else { // TODO: REGLE 3 A RAJOUTER
-            //error("Unexpected token in <CodePrime>");
-        }
-    }
-
     private void parseCode() {
         derivation.add(2); // Rule 2: <Code> → <Instruction> : <Code>
         parseInstruction();
         match(LexicalUnit.COLUMN);
-        parseCodePrime();
+        parseCode();
+        // TODO: Rule 3 is missing <Code> → ε
     }
 
     private void parseInstruction() {
@@ -83,67 +75,145 @@ public class Parser {
         parseExprArith();
     }
 
-    // à revoir pour les règles 11 et 12
-    private void parseExprArith() {
-        parseTerm();
-        boolean opExist = false;
-
-        while (currentToken.getType() == LexicalUnit.PLUS || currentToken.getType() == LexicalUnit.MINUS) {
-            if (currentToken.getType() == LexicalUnit.PLUS) {
-                derivation.add(11);
-                match(LexicalUnit.PLUS);
-                opExist = true;
-            } else if ((currentToken.getType() == LexicalUnit.MINUS)) {
-                derivation.add(12);
-                match(LexicalUnit.MINUS);
-                opExist = true;
-            }
-            parseTerm();
-        }
-        if (!opExist) {
-            derivation.add(13); // Rule 13: <ExprArith> -> <Term>
+    private void parseAtomCond() {
+        if (currentToken.getType() == LexicalUnit.PIPE) {
+            derivation.add(19); // Rule 19: <AtomCond> → |<Cond>|
+            match(LexicalUnit.PIPE);
+            parseCond();
+            match(LexicalUnit.PIPE);
+        } else if (currentToken.getType() == LexicalUnit.VARNAME || currentToken.getType() == LexicalUnit.NUMBER || currentToken.getType() == LexicalUnit.MINUS) {
+           derivation.add(20); // Rule 20: <AtomCond> → <ExprArith>
+            parseExprArith();
+        } else {
+            //error("Unexpected token in <AtomCond>");
         }
     }
 
-    private void parseTerm() {
-        parseFactor(); // Rule 16 is explicitly handled by this line
-        boolean opExist = false;
-
-        while (currentToken.getType() == LexicalUnit.TIMES || currentToken.getType() == LexicalUnit.DIVIDE) {
-            if (currentToken.getType() == LexicalUnit.TIMES) {
-                derivation.add(14); // Rule 14: <Term> → <Factor> * <Term>
-                match(LexicalUnit.TIMES);
-                opExist = true;
-            } else if (currentToken.getType() == LexicalUnit.DIVIDE) {
-                derivation.add(15); // Rule 15: <Term> → <Factor> / <Term>   ICI ON FAIT FACTOR / TERM et NON PAS TERM / FACTOR !!!!!
-                match(LexicalUnit.DIVIDE);
-                opExist = true;
-            }
-            parseFactor();
-        }
-        if (!opExist) {
-            derivation.add(16); // Rule 16: <Term> → <Factor>
+    private void parseCompCondPrime () {
+        if (currentToken.getType() == LexicalUnit.EQUAL) {
+            derivation.add(15); // Rule 15: <CompCondPrime> → ==
+            match(LexicalUnit.EQUAL);
+            parseAtomCond();
+            parseCompCondPrime();
+        } else if (currentToken.getType() == LexicalUnit.SMALEQ) {
+            derivation.add(16); // Rule 16: <CompCondPrime> → <=
+            match(LexicalUnit.SMALEQ);
+            parseAtomCond();
+            parseCompCondPrime();
+        } else if (currentToken.getType() == LexicalUnit.SMALLER) {
+            derivation.add(17); // Rule 17: <CompCondPrime> → <
+            match(LexicalUnit.SMALLER);
+            parseAtomCond();
+            parseCompCondPrime();
+        } // TODO : Rule 18 is missing <CompCondPrime> → ε
+        else {
+            //error("Unexpected token in <CompCondPrime>");
         }
     }
 
-    private void parseFactor() {
-        if (currentToken.getType() == LexicalUnit.VARNAME){
-            derivation.add(17); // Rule 17: <Factor> → [VarName]
+    private void parseCompCond () {
+        derivation.add(14); // Rule 14: <CompCond> → <AtomCond> <CompCondPrime>
+        parseAtomCond();
+        parseCompCondPrime();
+    }
+
+    private void parseCondTail() {
+        if (currentToken.getType() == LexicalUnit.IMPLIES) {
+            derivation.add(12); // Rule 12: <CondTail> → -> <Cond>
+            match(LexicalUnit.IMPLIES);
+            parseCond();
+        } // TODO Rule 13 is missing <CondTail> → ε
+        else {
+            //error("Unexpected token in <CondTail>");
+        }
+    }
+
+    private void parseCond() {
+        derivation.add(11) ; // Rule 11: <Cond> → <CompCond> <CondTail>
+        parseCompCond();
+        parseCondTail();
+    }
+
+    /////////////////////////////////////////////////////////////////
+
+    private void parseAtom() {
+        if (currentToken.getType() == LexicalUnit.MINUS) {
+            derivation.add(29); // Rule 29: <Atom> → - <Atom>
+            match(LexicalUnit.MINUS);
+            parseAtom();
+        } else if (currentToken.getType() == LexicalUnit.VARNAME) {
+            derivation.add(30); // Rule 30: <Atom> → [VarName]
             match(LexicalUnit.VARNAME);
         } else if (currentToken.getType() == LexicalUnit.NUMBER) {
-            derivation.add(18); // Rule 18: <Factor> → [Number]
+            derivation.add(31); // Rule 31: <Atom> → [Number]
             match(LexicalUnit.NUMBER);
-        } else if (currentToken.getType() == LexicalUnit.MINUS) {
-            derivation.add(19); // Rule 19: <Factor> → - <Factor>
-            match(LexicalUnit.MINUS);
-            parseFactor();
         } else if (currentToken.getType() == LexicalUnit.LPAREN) {
-            derivation.add(20); // Rule 20: <Factor> → ( <ExprArith> )
+            derivation.add(32); // Rule 26: <Atom> → ( <ExprArith> )
             match(LexicalUnit.LPAREN);
             parseExprArith();
             match(LexicalUnit.RPAREN);
         } else {
-            //error("Unexpected token in <Factor>");
+            //error("Unexpected token in <Atom>");
+        }
+    }
+
+    private void parseProdPrime() {
+        if (currentToken.getType() == LexicalUnit.TIMES) {
+            derivation.add(26); // Rule 26: <ProdPrime> → * <Atom> <ProdPrime>
+            match(LexicalUnit.TIMES);
+            parseAtom();
+            parseProdPrime();
+        } else if (currentToken.getType() == LexicalUnit.DIVIDE) {
+            derivation.add(27); // Rule 27: <ProdPrime> → / <Atom> <ProdPrime>
+            match(LexicalUnit.DIVIDE);
+            parseAtom();
+            parseProdPrime();
+        } // TODO Rule 28 is missing <ProdPrime> → ε
+        else {
+            //error("Unexpected token in <ProdPrime>");
+        }
+    }
+
+    private void parseProd() {
+        derivation.add(25); // Rule 25: <Prod> → <Atom> <ProdPrime>
+        parseAtom();
+        parseProdPrime();
+    }
+
+    private void parseExprArithPrime() {
+        if (currentToken.getType() == LexicalUnit.PLUS) {
+            derivation.add(22); // Rule 22: <ExprArithPrime> → + <Prod> <ExprArithPrime>
+            match(LexicalUnit.PLUS);
+            parseProd();
+            parseExprArithPrime();
+        } else if (currentToken.getType() == LexicalUnit.MINUS) {
+            derivation.add(23); // Rule 23: <ExprArithPrime> → - <Prod> <ExprArithPrime>
+            match(LexicalUnit.MINUS);
+            parseProd();
+            parseExprArithPrime();
+        } // TODO Rule 24 is missing <ExprArithPrime> → ε
+        else {
+            //error("Unexpected token in <ExprArithPrime>");
+        }
+    }
+
+    private void parseExprArith() {
+        derivation.add(21); // Rule 21: <ExprArith> → <Prod> <ExprArithPrime>
+        parseProd();
+        parseExprArithPrime();
+    }
+
+    private void parseIfTail() {
+        if (currentToken.getType() == LexicalUnit.END) {
+            derivation.add(34); // Rule 24: <IfTail> → ELSE <Code>
+            match(LexicalUnit.END);
+        } else if (currentToken.getType() == LexicalUnit.ELSE) {
+            derivation.add(35); // Rule 24: <IfTail> → ELSE <Code>
+            match(LexicalUnit.ELSE);
+            parseCode();
+            match(LexicalUnit.END);
+        } else {
+            //error("Unexpected token in <IfTail>");
         }
     }
 
@@ -154,61 +224,7 @@ public class Parser {
         match(LexicalUnit.RBRACK);
         match(LexicalUnit.THEN);
         parseCode();
-        if (currentToken.getType() == LexicalUnit.ELSE) {
-            match(LexicalUnit.ELSE);
-            derivation.add(22); // Rule 22: <If> → IF [Cond] THEN <Code> ELSE <Code>
-            parseCode();
-        } else {
-            derivation.add(21); // Rule 21: <If> → IF [Cond] THEN <Code>
-        }
-        match(LexicalUnit.END);
-    }
-
-    private void parseCond() {
-        parseCondImpl(); // Start with the highest precedence level
-        derivation.add(23); // Rule 23: <Cond> → <CondImpl>
-    }
-
-    private void parseCondImpl() {
-        parseCondOr(); // Parse lower precedence <CondOr>
-    
-        while (currentToken.getType() == LexicalUnit.IMPLIES) {
-            derivation.add(24); // Rule 24: <Cond> → <Cond> -> <Cond>
-            match(LexicalUnit.IMPLIES);
-            parseCondOr();
-        }
-    }
-
-    private void parseCondOr() {
-        parseCondBase(); // Parse the base condition
-    
-        while (currentToken.getType() == LexicalUnit.PIPE) {
-            derivation.add(25); // Rule 25: <Cond> → <Cond> | <Cond>
-            match(LexicalUnit.PIPE);
-            parseCondBase();
-        }
-    }
-    
-    private void parseCondBase() {
-        parseExprArith();
-        derivation.add(26); // Rule 26: <Cond> → <ExprArith> <Comp> <ExprArith>
-        parseComp();
-        parseExprArith();
-    }
-
-    private void parseComp() {
-        if (currentToken.getType() == LexicalUnit.EQUAL) {
-            derivation.add(27); // Rule 27: <Comp> → ==
-            match(LexicalUnit.EQUAL);
-        } else if (currentToken.getType() == LexicalUnit.SMALEQ) {
-            derivation.add(28); // Rule 28: <Comp> → <=
-            match(LexicalUnit.SMALEQ);
-        } else if (currentToken.getType() == LexicalUnit.SMALLER) {
-            derivation.add(29); // Rule 29: <Comp> → <
-            match(LexicalUnit.SMALLER);
-        } else {
-            //error("Unexpected token in <Comp>");
-        }
+        parseIfTail();
     }
 
     private void parseWhile() {
