@@ -63,8 +63,6 @@ public class Parser {
         } else if (currentToken.getType() == LexicalUnit.INPUT) {
             derivation.add(9); // Rule 9: <Instruction> → <In>
             parseIn();
-        } else {
-            //error("Unexpected token in <Instruction>");
         }
     }
 
@@ -84,8 +82,6 @@ public class Parser {
         } else if (currentToken.getType() == LexicalUnit.VARNAME || currentToken.getType() == LexicalUnit.NUMBER || currentToken.getType() == LexicalUnit.MINUS) {
            derivation.add(20); // Rule 20: <AtomCond> → <ExprArith>
             parseExprArith();
-        } else {
-            //error("Unexpected token in <AtomCond>");
         }
     }
 
@@ -105,9 +101,9 @@ public class Parser {
             match(LexicalUnit.SMALLER);
             parseAtomCond();
             parseCompCondPrime();
-        } // TODO : Rule 18 is missing <CompCondPrime> → ε
-        else {
-            //error("Unexpected token in <CompCondPrime>");
+        } else {
+            // Rule 18: <CompCondPrime> → ε
+            derivation.add(18);
         }
     }
 
@@ -122,9 +118,9 @@ public class Parser {
             derivation.add(12); // Rule 12: <CondTail> → -> <Cond>
             match(LexicalUnit.IMPLIES);
             parseCond();
-        } // TODO Rule 13 is missing <CondTail> → ε
-        else {
-            //error("Unexpected token in <CondTail>");
+        } else {
+            // Rule 13: <CondTail> → ε
+            derivation.add(13);
         }
     }
 
@@ -133,8 +129,6 @@ public class Parser {
         parseCompCond();
         parseCondTail();
     }
-
-    /////////////////////////////////////////////////////////////////
 
     private void parseAtom() {
         if (currentToken.getType() == LexicalUnit.MINUS) {
@@ -152,8 +146,6 @@ public class Parser {
             match(LexicalUnit.LPAREN);
             parseExprArith();
             match(LexicalUnit.RPAREN);
-        } else {
-            //error("Unexpected token in <Atom>");
         }
     }
 
@@ -168,9 +160,9 @@ public class Parser {
             match(LexicalUnit.DIVIDE);
             parseAtom();
             parseProdPrime();
-        } // TODO Rule 28 is missing <ProdPrime> → ε
-        else {
-            //error("Unexpected token in <ProdPrime>");
+        } else {
+            // Rule 28: <ProdPrime> → ε
+            derivation.add(28);
         }
     }
 
@@ -191,9 +183,9 @@ public class Parser {
             match(LexicalUnit.MINUS);
             parseProd();
             parseExprArithPrime();
-        } // TODO Rule 24 is missing <ExprArithPrime> → ε
-        else {
-            //error("Unexpected token in <ExprArithPrime>");
+        } else {
+            // Rule 24: <ExprArithPrime> → ε
+            derivation.add(24);
         }
     }
 
@@ -212,8 +204,6 @@ public class Parser {
             match(LexicalUnit.ELSE);
             parseCode();
             match(LexicalUnit.END);
-        } else {
-            //error("Unexpected token in <IfTail>");
         }
     }
 
