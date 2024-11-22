@@ -13,11 +13,10 @@ public class Main {
             parser.printDerivation();
         }
         catch (IOException e) {
-            System.err.println("An I/O error occured while reading the input: " + e.getMessage());
+            System.err.println("An I/O error occurred while reading the input: " + e.getMessage());
         } 
-
-
-
-
+        catch (UnexpectedTokenException e) {
+            System.err.println("UnexpectedTokenException: " + e.getMessage());
+        }
     }
 }
