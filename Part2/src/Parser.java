@@ -6,7 +6,12 @@ public class Parser {
     private final LexicalAnalyzer scanner;
     private final List<Integer> derivation;
     private Symbol currentToken;
-    
+    public void printDerivation() {
+        for(Integer elem: derivation){
+            System.out.println(elem.toString() + " ");
+        }
+
+    }
     public Parser(LexicalAnalyzer scanner) {
         this.scanner = scanner;
         this.derivation = new ArrayList<>();
@@ -29,6 +34,7 @@ public class Parser {
     }
 
     public void parseProgram() {
+        advance();
         derivation.add(1); // Rule 1: <Program> → LET [ProgName] BE <Code> END
         match(LexicalUnit.LET);
         match(LexicalUnit.PROGNAME);
@@ -38,10 +44,18 @@ public class Parser {
     }
 
     private void parseCode() {
-        derivation.add(2); // Rule 2: <Code> → <Instruction> : <Code>
-        parseInstruction();
-        match(LexicalUnit.COLUMN);
-        parseCode();
+        if(currentToken.getType() == LexicalUnit.VARNAME || currentToken.getType() == LexicalUnit.IF || currentToken.getType() == LexicalUnit.WHILE || currentToken.getType() == LexicalUnit.OUTPUT || currentToken.getType() == LexicalUnit.INPUT) {
+            derivation.add(2); // Rule 2: <Code> → <Instruction> : <Code>
+            parseInstruction();
+            match(LexicalUnit.COLUMN);
+            parseCode();
+        }
+        else{
+            derivation.add(3); // Rule 2: <Code> → <Instruction> : <Code>
+
+        }
+
+
         // TODO: Rule 3 is missing <Code> → ε
     }
 
