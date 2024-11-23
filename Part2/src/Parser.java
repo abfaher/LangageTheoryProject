@@ -34,7 +34,7 @@ public class Parser {
         }
     }
 
-    public void parseProgram() throws UnexpectedTokenException{
+    public ParseTree parseProgram() throws UnexpectedTokenException{
         advance();
         match(LexicalUnit.LET);
         derivation.add(1); // Rule 1: <Program> → LET [ProgName] BE <Code> END
@@ -42,220 +42,358 @@ public class Parser {
         match(LexicalUnit.BE);
         parseCode();
         match(LexicalUnit.END);
+
+        ParseTree programNode = new ParseTree(new Symbol("<Program>")); // Root node for <Program>
+        advance();
+        match(LexicalUnit.LET);
+        derivation.add(1); // Rule 1: <Program> → LET [ProgName] BE <Code> END
+        programNode.addChild(new ParseTree(new Symbol(LexicalUnit.LET)));
+        
+        match(LexicalUnit.PROGNAME);
+        programNode.addChild(new ParseTree(currentToken)); // [ProgName]
+    
+        match(LexicalUnit.BE);
+        programNode.addChild(new ParseTree(new Symbol(LexicalUnit.BE)));
+        
+        ParseTree codeNode = parseCode();
+        programNode.addChild(codeNode); // Add the parsed <Code> subtree
+        
+        match(LexicalUnit.END);
+        programNode.addChild(new ParseTree(new Symbol(LexicalUnit.END)));
+    
+        return programNode;
     }
 
-    private void parseCode() throws UnexpectedTokenException{
+    private ParseTree parseCode() throws UnexpectedTokenException{
+        ParseTree codeNode = new ParseTree(new Symbol("<Code>")); // Root node for <Code>
         if(currentToken.getType() == LexicalUnit.VARNAME || currentToken.getType() == LexicalUnit.IF || currentToken.getType() == LexicalUnit.WHILE || currentToken.getType() == LexicalUnit.OUTPUT || currentToken.getType() == LexicalUnit.INPUT) {
             derivation.add(2); // Rule 2: <Code> → <Instruction> : <Code>
-            parseInstruction();
+            ParseTree instructionNode = parseInstruction(); // Parse <Instruction>
+            codeNode.addChild(instructionNode);
             match(LexicalUnit.COLUMN);
-            parseCode();
+            codeNode.addChild(new ParseTree(new Symbol(LexicalUnit.COLUMN)));
+
+            ParseTree nextCodeNode = parseCode(); // Parse <Code> recursively
+            codeNode.addChild(nextCodeNode);
         }
         else if(currentToken.getType() == LexicalUnit.END || currentToken.getType() == LexicalUnit.ELSE){
             derivation.add(3); // Rule 3: → ϵ
+            codeNode.addChild(new ParseTree(new Symbol("ε")));
         }
+        return codeNode;
     }
 
-    private void parseInstruction() throws UnexpectedTokenException{
-       if (currentToken.getType() == LexicalUnit.VARNAME) {
-            derivation.add(4); // Rule 4: <Instruction> → <Assignment>
-            parseAssign();
+    private ParseTree parseInstruction() throws UnexpectedTokenException {
+        ParseTree instructionNode = new ParseTree(new Symbol("<Instruction>"));
+    
+        if (currentToken.getType() == LexicalUnit.VARNAME) {
+            derivation.add(4); // Rule 4: <Instruction> → <Assign>
+            instructionNode.addChild(parseAssign());
+    
         } else if (currentToken.getType() == LexicalUnit.IF) {
             derivation.add(5); // Rule 5: <Instruction> → <If>
-            parseIf();
+            instructionNode.addChild(parseIf());
+    
         } else if (currentToken.getType() == LexicalUnit.WHILE) {
             derivation.add(6); // Rule 6: <Instruction> → <While>
-            parseWhile();
-        }
-        // TODO: Rule 7 is missing <Call> is not defined in the LexicalUnit class !!
+            instructionNode.addChild(parseWhile());
+            
+        } // TODO : add the rule 7 <CALL>
         else if (currentToken.getType() == LexicalUnit.OUTPUT) {
             derivation.add(8); // Rule 8: <Instruction> → <Out>
-            parseOut();
+            instructionNode.addChild(parseOut());
+    
         } else if (currentToken.getType() == LexicalUnit.INPUT) {
             derivation.add(9); // Rule 9: <Instruction> → <In>
-            parseIn();
+            instructionNode.addChild(parseIn());
+        } else {
+            throw new UnexpectedTokenException("Unexpected token in <Instruction>");
         }
+    
+        return instructionNode; // Return the constructed <Instruction> node
     }
 
-    private void parseAssign() throws UnexpectedTokenException{
-        derivation.add(10); // Rule 10: <Assignment> → [VarName] = <ExprArith>
+    private ParseTree parseAssign() throws UnexpectedTokenException {
+        ParseTree assignNode = new ParseTree(new Symbol("<Assign>"));
+    
         match(LexicalUnit.VARNAME);
+        assignNode.addChild(new ParseTree(currentToken));
+    
         match(LexicalUnit.ASSIGN);
-        parseExprArith();
+        assignNode.addChild(new ParseTree(new Symbol(LexicalUnit.ASSIGN)));
+    
+        ParseTree exprNode = parseExprArith();
+        assignNode.addChild(exprNode);
+    
+        return assignNode;
     }
 
-    private void parseAtomCond() throws UnexpectedTokenException{
+    private ParseTree parseAtomCond() throws UnexpectedTokenException{
+        ParseTree atomCondNode = new ParseTree(new Symbol("<AtomCond>"));
         if (currentToken.getType() == LexicalUnit.PIPE) {
             derivation.add(19); // Rule 19: <AtomCond> → |<Cond>|
             match(LexicalUnit.PIPE);
-            parseCond();
+            atomCondNode.addChild(new ParseTree(new Symbol(LexicalUnit.PIPE)));
+            atomCondNode.addChild(parseCond());
             match(LexicalUnit.PIPE);
+            atomCondNode.addChild(new ParseTree(new Symbol(LexicalUnit.PIPE)));
         }
         // } else if (currentToken.getType() == LexicalUnit.MINUS || currentToken.getType() == LexicalUnit.VARNAME || currentToken.getType() == LexicalUnit.NUMBER || currentToken.getType() == LexicalUnit.LPAREN){
         else{
             derivation.add(20); // Rule 20: <AtomCond> → <ExprArith>
-            parseExprArith();
+            atomCondNode.addChild(parseExprArith());
         }
+
+        return atomCondNode;
     }
 
-    private void parseCompCondPrime () throws UnexpectedTokenException{
+    private ParseTree parseCompCondPrime () throws UnexpectedTokenException{
+        ParseTree compCondPrimeNode = new ParseTree(new Symbol("<CompCondPrime>"));
         if (currentToken.getType() == LexicalUnit.EQUAL) {
             derivation.add(15); // Rule 15: <CompCondPrime> → ==
             match(LexicalUnit.EQUAL);
-            parseAtomCond();
-            parseCompCondPrime();
+            compCondPrimeNode.addChild(new ParseTree(new Symbol(LexicalUnit.EQUAL)));
+            compCondPrimeNode.addChild(parseAtomCond());
+            compCondPrimeNode.addChild(parseCompCondPrime());
         } else if (currentToken.getType() == LexicalUnit.SMALEQ) {
             derivation.add(16); // Rule 16: <CompCondPrime> → <=
             match(LexicalUnit.SMALEQ);
-            parseAtomCond();
-            parseCompCondPrime();
+            compCondPrimeNode.addChild(new ParseTree(new Symbol(LexicalUnit.SMALEQ)));
+            compCondPrimeNode.addChild(parseAtomCond());
+            compCondPrimeNode.addChild(parseCompCondPrime());
         } else if (currentToken.getType() == LexicalUnit.SMALLER) {
             derivation.add(17); // Rule 17: <CompCondPrime> → <
             match(LexicalUnit.SMALLER);
-            parseAtomCond();
-            parseCompCondPrime();
+            compCondPrimeNode.addChild(new ParseTree(new Symbol(LexicalUnit.SMALLER)));
+            compCondPrimeNode.addChild(parseAtomCond());
+            compCondPrimeNode.addChild(parseCompCondPrime());
         } else if (currentToken.getType() == LexicalUnit.IMPLIES || currentToken.getType() == LexicalUnit.PIPE || currentToken.getType() == LexicalUnit.RBRACK){
             // Rule 18: <CompCondPrime> → ε
             derivation.add(18);
+            compCondPrimeNode.addChild(new ParseTree(new Symbol("ε")));
         }
+
+        return compCondPrimeNode;
     }
 
-    private void parseCompCond () throws UnexpectedTokenException{
+    private ParseTree parseCompCond () throws UnexpectedTokenException{
+        ParseTree compCondNode = new ParseTree(new Symbol("<CompCond>"));
         derivation.add(14); // Rule 14: <CompCond> → <AtomCond> <CompCondPrime>
-        parseAtomCond();
-        parseCompCondPrime();
+        compCondNode.addChild(parseAtomCond());
+        compCondNode.addChild(parseCompCondPrime());
+
+        return compCondNode;
     }
 
-    private void parseCondTail() throws UnexpectedTokenException{
+    private ParseTree parseCondTail() throws UnexpectedTokenException{
+        ParseTree condTailNode = new ParseTree(new Symbol("<CondTail>"));
         if (currentToken.getType() == LexicalUnit.IMPLIES) {
             derivation.add(12); // Rule 12: <CondTail> → -> <Cond>
             match(LexicalUnit.IMPLIES);
-            parseCond();
+            condTailNode.addChild(new ParseTree(new Symbol(LexicalUnit.IMPLIES)));
+            condTailNode.addChild(parseCond());
         } else if (currentToken.getType() == LexicalUnit.PIPE || currentToken.getType() == LexicalUnit.RBRACK) {
             // Rule 13: <CondTail> → ε
             derivation.add(13);
+            condTailNode.addChild(new ParseTree(new Symbol("ε")));
         }
+
+        return condTailNode;
     }
 
-    private void parseCond() throws UnexpectedTokenException{
+    private ParseTree parseCond() throws UnexpectedTokenException{
+        ParseTree condNode = new ParseTree(new Symbol("<Cond>"));
         derivation.add(11) ; // Rule 11: <Cond> → <CompCond> <CondTail>
-        parseCompCond();
-        parseCondTail();
+        condNode.addChild(parseCompCond());
+        condNode.addChild(parseCondTail());
+
+        return condNode;
     }
 
-    private void parseAtom() throws UnexpectedTokenException{
+    private ParseTree parseAtom() throws UnexpectedTokenException {
+        ParseTree atomNode = new ParseTree(new Symbol("<Atom>"));
+    
         if (currentToken.getType() == LexicalUnit.MINUS) {
             derivation.add(29); // Rule 29: <Atom> → - <Atom>
             match(LexicalUnit.MINUS);
-            parseAtom();
+            atomNode.addChild(new ParseTree(new Symbol(LexicalUnit.MINUS)));
+            atomNode.addChild(parseAtom()); // Recursive <Atom>
+    
         } else if (currentToken.getType() == LexicalUnit.VARNAME) {
             derivation.add(30); // Rule 30: <Atom> → [VarName]
             match(LexicalUnit.VARNAME);
+            atomNode.addChild(new ParseTree(new Symbol(LexicalUnit.VARNAME))); // [VarName]
+    
         } else if (currentToken.getType() == LexicalUnit.NUMBER) {
             derivation.add(31); // Rule 31: <Atom> → [Number]
             match(LexicalUnit.NUMBER);
+            atomNode.addChild(new ParseTree(new Symbol(LexicalUnit.NUMBER)));
+    
         } else if (currentToken.getType() == LexicalUnit.LPAREN) {
             derivation.add(32); // Rule 26: <Atom> → ( <ExprArith> )
             match(LexicalUnit.LPAREN);
-            parseExprArith();
+            atomNode.addChild(new ParseTree(new Symbol(LexicalUnit.LPAREN)));
+    
+            atomNode.addChild(parseExprArith()); // Add <ExprArith>
+    
             match(LexicalUnit.RPAREN);
+            atomNode.addChild(new ParseTree(new Symbol(LexicalUnit.RPAREN)));
         }
+    
+        return atomNode;
     }
 
-    private void parseProdPrime() throws UnexpectedTokenException{
+    private ParseTree parseProdPrime() throws UnexpectedTokenException{
+        ParseTree prodPrimeNode = new ParseTree(new Symbol("<ProdPrime>"));
         if (currentToken.getType() == LexicalUnit.TIMES) {
             derivation.add(26); // Rule 26: <ProdPrime> → * <Atom> <ProdPrime>
             match(LexicalUnit.TIMES);
-            parseAtom();
-            parseProdPrime();
+            prodPrimeNode.addChild(new ParseTree(new Symbol(LexicalUnit.TIMES)));
+            prodPrimeNode.addChild(parseAtom());
+            prodPrimeNode.addChild(parseProdPrime());
         } else if (currentToken.getType() == LexicalUnit.DIVIDE) {
             derivation.add(27); // Rule 27: <ProdPrime> → / <Atom> <ProdPrime>
             match(LexicalUnit.DIVIDE);
-            parseAtom();
-            parseProdPrime();
+            prodPrimeNode.addChild(new ParseTree(new Symbol(LexicalUnit.DIVIDE)));
+            prodPrimeNode.addChild(parseAtom());
+            prodPrimeNode.addChild(parseProdPrime());
         } else if (currentToken.getType() == LexicalUnit.PLUS || currentToken.getType() == LexicalUnit.MINUS || currentToken.getType() == LexicalUnit.COLUMN || currentToken.getType() == LexicalUnit.RPAREN || currentToken.getType() == LexicalUnit.IMPLIES || currentToken.getType() == LexicalUnit.PIPE || currentToken.getType() == LexicalUnit.RBRACK){
             // Rule 28: <ProdPrime> → ε
             derivation.add(28);
+            prodPrimeNode.addChild(new ParseTree(new Symbol("ε")));
         }
+
+        return prodPrimeNode;
     }
 
-    private void parseProd() throws UnexpectedTokenException{
+    private ParseTree parseProd() throws UnexpectedTokenException {
+        ParseTree prodNode = new ParseTree(new Symbol("<Prod>"));
         derivation.add(25); // Rule 25: <Prod> → <Atom> <ProdPrime>
-        parseAtom();
-        parseProdPrime();
+    
+        ParseTree atomNode = parseAtom();
+        prodNode.addChild(atomNode); // Add <Atom>
+    
+        ParseTree prodPrimeNode = parseProdPrime();
+        prodNode.addChild(prodPrimeNode); // Add <ProdPrime>
+    
+        return prodNode; // Return the constructed <Prod> node
     }
 
-    private void parseExprArithPrime() throws UnexpectedTokenException{
+    private ParseTree parseExprArithPrime() throws UnexpectedTokenException{
+        ParseTree exprArithPrimeNode = new ParseTree(new Symbol("<ExprArithPrime>"));
         if (currentToken.getType() == LexicalUnit.PLUS) {
             derivation.add(22); // Rule 22: <ExprArithPrime> → + <Prod> <ExprArithPrime>
             match(LexicalUnit.PLUS);
-            parseProd();
-            parseExprArithPrime();
+            exprArithPrimeNode.addChild(new ParseTree(new Symbol(LexicalUnit.PLUS)));
+            exprArithPrimeNode.addChild(parseProd());
+            exprArithPrimeNode.addChild(parseExprArithPrime());
         } else if (currentToken.getType() == LexicalUnit.MINUS) {
             derivation.add(23); // Rule 23: <ExprArithPrime> → - <Prod> <ExprArithPrime>
             match(LexicalUnit.MINUS);
-            parseProd();
-            parseExprArithPrime();
+            exprArithPrimeNode.addChild(new ParseTree(new Symbol(LexicalUnit.MINUS)));
+            exprArithPrimeNode.addChild(parseProd());
+            exprArithPrimeNode.addChild(parseExprArithPrime());
         } else if (currentToken.getType() == LexicalUnit.RPAREN || currentToken.getType() == LexicalUnit.EQUAL || currentToken.getType() == LexicalUnit.SMALEQ || currentToken.getType() == LexicalUnit.SMALLER || currentToken.getType() == LexicalUnit.IMPLIES || currentToken.getType() == LexicalUnit.PIPE || currentToken.getType() == LexicalUnit.RBRACK || currentToken.getType() == LexicalUnit.COLUMN){
             // Rule 24: <ExprArithPrime> → ε
             derivation.add(24);
+            exprArithPrimeNode.addChild(new ParseTree(new Symbol("ε")));
         }
+
+        return exprArithPrimeNode;
     }
 
-    private void parseExprArith() throws UnexpectedTokenException{
+    private ParseTree parseExprArith() throws UnexpectedTokenException{
+        ParseTree exprArithNode = new ParseTree(new Symbol("<ExprArith>"));
         derivation.add(21); // Rule 21: <ExprArith> → <Prod> <ExprArithPrime>
-        parseProd();
-        parseExprArithPrime();
+        exprArithNode.addChild(parseProd());
+        exprArithNode.addChild(parseExprArithPrime());
+
+        return exprArithNode;
     }
 
-    private void parseIfTail() throws UnexpectedTokenException{
+    private ParseTree parseIfTail() throws UnexpectedTokenException{
+        ParseTree ifTailNode = new ParseTree(new Symbol("<IfTail>"));
         if (currentToken.getType() == LexicalUnit.END) {
-            derivation.add(34); // Rule 24: <IfTail> → ELSE <Code>
+            derivation.add(34); // Rule 34: <IfTail> → END
             match(LexicalUnit.END);
+            ifTailNode.addChild(new ParseTree(new Symbol(LexicalUnit.END)));
         } else if (currentToken.getType() == LexicalUnit.ELSE) {
-            derivation.add(35); // Rule 24: <IfTail> → ELSE <Code>
+            derivation.add(35); // Rule 35: <IfTail> → ELSE <Code>
             match(LexicalUnit.ELSE);
-            parseCode();
+            ifTailNode.addChild(new ParseTree(new Symbol(LexicalUnit.ELSE)));
+            ifTailNode.addChild(parseCode());
             match(LexicalUnit.END);
+            ifTailNode.addChild(new ParseTree(new Symbol(LexicalUnit.END)));
         }
+
+        return ifTailNode;
     }
 
-    private void parseIf() throws UnexpectedTokenException{
+    private ParseTree parseIf() throws UnexpectedTokenException{
+        ParseTree ifNode = new ParseTree(new Symbol("<If>"));
         derivation.add(33); // Rule 30: <While> → WHILE [Cond] REPEAT <Code> END
         match(LexicalUnit.IF);
+        ifNode.addChild(new ParseTree(new Symbol(LexicalUnit.IF)));
         match(LexicalUnit.LBRACK);
-        parseCond();
+        ifNode.addChild(new ParseTree(new Symbol(LexicalUnit.LBRACK)));
+        ifNode.addChild(parseCond());
         match(LexicalUnit.RBRACK);
+        ifNode.addChild(new ParseTree(new Symbol(LexicalUnit.RBRACK)));
         match(LexicalUnit.THEN);
-        parseCode();
-        parseIfTail();
+        ifNode.addChild(new ParseTree(new Symbol(LexicalUnit.THEN)));
+        ifNode.addChild(parseCode());
+        ifNode.addChild(parseIfTail());
+
+        return ifNode;
     }
 
-    private void parseWhile() throws UnexpectedTokenException{
+    private ParseTree parseWhile() throws UnexpectedTokenException{
+        ParseTree whileNode = new ParseTree(new Symbol("<While>"));
         derivation.add(36); // Rule 36: <While> → WHILE [Cond] REPEAT <Code> END
         match(LexicalUnit.WHILE);
+        whileNode.addChild(new ParseTree(new Symbol(LexicalUnit.WHILE)));
         match(LexicalUnit.LBRACK);
-        parseCond();
+        whileNode.addChild(new ParseTree(new Symbol(LexicalUnit.LBRACK)));
+        whileNode.addChild(parseCond());
         match(LexicalUnit.RBRACK);
+        whileNode.addChild(new ParseTree(new Symbol(LexicalUnit.RBRACK)));
         match(LexicalUnit.REPEAT);
-        parseCode();
+        whileNode.addChild(new ParseTree(new Symbol(LexicalUnit.REPEAT)));
+        whileNode.addChild(parseCode());
         match(LexicalUnit.END);
+        whileNode.addChild(new ParseTree(new Symbol(LexicalUnit.END)));
+        
+        return whileNode;
     }
 
-    private void parseOut() throws UnexpectedTokenException{
+    private ParseTree parseOut() throws UnexpectedTokenException{
+        ParseTree outNode = new ParseTree(new Symbol("<Out>"));
         derivation.add(37); // Rule 37: <Out> → OUT [VarName]
         match(LexicalUnit.OUTPUT);
+        outNode.addChild(new ParseTree(new Symbol(LexicalUnit.OUTPUT)));
         match(LexicalUnit.LPAREN);
+        outNode.addChild(new ParseTree(new Symbol(LexicalUnit.LPAREN)));
         match(LexicalUnit.VARNAME);
+        outNode.addChild(new ParseTree(new Symbol(LexicalUnit.VARNAME)));
         match(LexicalUnit.RPAREN);
+        outNode.addChild(new ParseTree(new Symbol(LexicalUnit.RPAREN)));
+
+        return outNode;
     }
 
-    private void parseIn() throws UnexpectedTokenException{
+    private ParseTree parseIn() throws UnexpectedTokenException{
+        ParseTree inNode = new ParseTree(new Symbol("<In>"));
         derivation.add(38); // Rule 33: <In> → IN [VarName]
         match(LexicalUnit.INPUT);
+        inNode.addChild(new ParseTree(new Symbol(LexicalUnit.INPUT)));
         match(LexicalUnit.LPAREN);
+        inNode.addChild(new ParseTree(new Symbol(LexicalUnit.LPAREN)));
         match(LexicalUnit.VARNAME);
+        inNode.addChild(new ParseTree(new Symbol(LexicalUnit.VARNAME)));
         match(LexicalUnit.RPAREN);
+        inNode.addChild(new ParseTree(new Symbol(LexicalUnit.RPAREN)));
+
+        return inNode;
     }
 
     // derivation of LL(1) parsing table
