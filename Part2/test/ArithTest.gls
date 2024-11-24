@@ -1,0 +1,16 @@
+!! Arithmetic Operations !!
+
+LET CalcTest BE
+  IN(a):
+  IN(b):
+  
+  c = a + b * 2:    $ Tests multiplication and addition precedence
+  OUT(c):
+  
+  d = (a + b) * 2:  $ Tests parenthesis to change precedence
+  OUT(d):
+  
+  e = a - b / 2:    $ Tests division and subtraction precedence
+  OUT(e):
+
+END

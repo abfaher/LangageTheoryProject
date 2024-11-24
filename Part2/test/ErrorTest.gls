@@ -1,0 +1,17 @@
+!! Syntax Error !!
+
+LET CalcTest BE
+  IN(a):
+  IN(b)::           $ Error is here (additional column character)
+  IN(c):
+  
+  c = a + b * 2:    $ Tests multiplication and addition precedence
+  OUT(c):
+  
+  d = (a + b) * 2:  $ Tests parenthesis to change precedence
+  OUT(d):
+  
+  e = a - b / 2:    $ Tests division and subtraction precedence
+  OUT(e):
+
+END

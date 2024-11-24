@@ -1,9 +1,0 @@
-$ Simple IF execution :
-
-    IF $ this comment should be ignored..
-    
-    abbb        THEN 
-        x=3
-        
-    :
-$ END of execution
