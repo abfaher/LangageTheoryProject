@@ -67,7 +67,7 @@
 	public Symbol(LexicalUnit unit,int line){
 		this(unit,line,UNDEFINED_POSITION,NO_VALUE);
 	}
-	
+
     /**
      * Creates a Symbol using the provided attributes, without position or value.
      * 
@@ -76,7 +76,7 @@
 	public Symbol(LexicalUnit unit){
 		this(unit,UNDEFINED_POSITION,UNDEFINED_POSITION,NO_VALUE);
 	}
-	
+
     /**
      * Creates a Symbol using the provided attributes, without position.
      * 
@@ -97,7 +97,7 @@
 	public boolean isTerminal(){
 		return this.type != null;
 	}
-	
+
     /**
      * Returns whether the symbol represents a non-terminal.
      * 
@@ -108,7 +108,7 @@
 	public boolean isNonTerminal(){
 		return this.type == null;
 	}
-	
+
     /**
      * Returns the type of the symbol.
      * 
@@ -119,7 +119,7 @@
 	public LexicalUnit getType(){
 		return this.type;
 	}
-	
+
     /**
      * Returns the value of the symbol.
      * 
