@@ -1,4 +1,6 @@
 import java.util.List;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 /**
@@ -44,7 +46,18 @@ public class ParseTree {
     public String toLaTexTree() {
         StringBuilder treeTeX = new StringBuilder();
         treeTeX.append("[");
-        treeTeX.append("{" + label.toTexString() + "}");
+        String labelContent = label.toTexString();
+
+        if (labelContent.equals("ε")) {
+            treeTeX.append("{$\\varepsilon$}");
+        } else if (labelContent.equals("<")) {
+            treeTeX.append("{\\textless}");
+        } else if (labelContent.equals(">")) {
+            treeTeX.append("{\\textgreater}");
+        } else {
+            treeTeX.append("{" + labelContent + "}");
+        }
+        
         treeTeX.append(" ");
 
         for (ParseTree child : children) {
@@ -105,5 +118,14 @@ public class ParseTree {
 
     public void addChild(ParseTree parseTree) {
         children.add(parseTree);
+    }
+
+    public void writeParseTreeToLaTeX(String outputFile) {
+        try (PrintWriter writer = new PrintWriter(outputFile)) {
+            writer.println(this.toLaTeX());
+            System.out.println("Parse tree written to " + outputFile);
+        } catch (IOException e) {
+            System.err.println("Error writing to LaTeX file: " + e.getMessage());
+        }
     }
 }
