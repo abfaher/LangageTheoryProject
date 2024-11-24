@@ -191,6 +191,9 @@
     }
 
     public String toTexString(){
-        return this.toString();
+        if(this.isTerminal()){
+            return this.type.toString();
+        } 
+        return this.value.toString();
     }
  }
