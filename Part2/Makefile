@@ -1,50 +1,76 @@
-# Variables
+# directories
 SRC_DIR = src
+BIN_DIR = bin
 DIST_DIR = dist
-MANIFEST = $(DIST_DIR)/manifest/MANIFEST.MF
-JAR_NAME = part2.jar
+TEST_DIR = test
+
+# Java compiler and flags
+JAVAC = javac
+JAVA = java
+JAR = jar
+JAVAC_FLAGS = -d $(BIN_DIR)
+
+#Main class and jar file
 MAIN_CLASS = Main
-LATEXT_OUTPUT_DIR = latex
-TEST_FILES = test/LongComment.gls test/ArithTest.gls test/ErrorTest.gls test/Euclid.gls
+JAR_FILE = $(DIST_DIR)/part2.jar
 
-# Default target
-all: compile jar run
+# source files
+JAVA_FILES = $(wildcard $(SRC_DIR)/*.java)
+CLASS_FILES = $(patsubst $(SRC_DIR)/%.java,$(BIN_DIR)/%.class,$(JAVA_FILES))
 
-# Compile the Java source files
-compile:
-	cd $(SRC_DIR) && javac *.java
+# get all arguments after the target for run command
+RUN_ARGS = $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
-# Create the JAR file
-jar: compile
-	cd $(SRC_DIR) && jar cfm ../$(DIST_DIR)/$(JAR_NAME) ../$(MANIFEST) *.class
+# default target
+all: compile jar
 
-# Run the program using the JAR
-run:
-	@ARGS_LENGTH=`echo $(ARGS) | wc -w`; \
-	if [ $$ARGS_LENGTH -eq 1 ]; then \
-		echo "Running without -wt option"; \
-		INPUT_FILE=`echo $(ARGS) | awk '{print $$1}'`; \
-		echo "Running program on $$INPUT_FILE..."; \
-		cd $(SRC_DIR) && java -jar ../$(DIST_DIR)/$(JAR_NAME) ../$$INPUT_FILE; \
-	elif [ $$ARGS_LENGTH -eq 3 ]; then \
-		echo "Running with -wt option"; \
-		mkdir -p $(LATEXT_OUTPUT_DIR); \
-		INPUT_FILE=`echo $(ARGS) | awk '{print $$1}'`; \
-		OUTPUT_FILE=`echo $(ARGS) | awk '{print $$3}'`; \
-		echo "Running program on $$INPUT_FILE..."; \
-		echo "Running program on $$OUTPUT_FILE..."; \
-		cd $(SRC_DIR) && java -jar ../$(DIST_DIR)/$(JAR_NAME) -wt ../$(LATEXT_OUTPUT_DIR)/$$OUTPUT_FILE ../$$INPUT_FILE; \
+#create necessary directories
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+$(DIST_DIR):
+	mkdir -p $(DIST_DIR)
+
+#compile Java files
+compile: $(BIN_DIR)
+	$(JAVAC) $(JAVAC_FLAGS) $(JAVA_FILES)
+
+# create JAR file
+jar: compile $(DIST_DIR)
+	$(JAR) cfe $(JAR_FILE) $(MAIN_CLASS) -C $(BIN_DIR) .
+
+# run program with file argument
+run: jar
+	@if [ "$(RUN_ARGS)" = "" ]; then \
+		echo "Usage: make run [WT=out.tex] file.gls"; \
+		exit 1; \
+	fi
+	@if [ "$(WT)" != "" ]; then \
+		java -jar $(JAR_FILE) -wt $(WT) $(RUN_ARGS); \
 	else \
-		echo "Usage: make run ARGS='<input file> [-wt <output file>]"; \
+		java -jar $(JAR_FILE) $(RUN_ARGS); \
 	fi
 
-# Run tests
+# run tests on all .gls files in test directory
 test: jar
-	@for test_file in $(TEST_FILES); do \
-		echo "Running test on $$test_file..."; \
-		cd $(SRC_DIR) && java -jar ../$(DIST_DIR)/$(JAR_NAME) ../$$test_file; \
+	@for file in $(TEST_DIR)/*.gls; do \
+		if [ -f "$$file" ]; then \
+			echo "Testing $$file..."; \
+			if [ "$(WT)" != "" ]; then \
+				java -jar $(JAR_FILE) -wt $(WT) $$file; \
+			else \
+				java -jar $(JAR_FILE) $$file; \
+			fi; \
+		fi \
 	done
 
-# Clean .class files
+#clean build artifacts
 clean:
-	rm -rf $(SRC_DIR)/*.class
+	rm -rf $(BIN_DIR)
+	rm -rf $(DIST_DIR)
+
+# handle arguments
+%:
+	@:
+
+.PHONY: all compile jar run test clean
